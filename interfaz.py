@@ -70,6 +70,7 @@ def crear_tablero():
         layout.append(fila_layout)
     return layout, tablero      
 
+#Funcion para cambiar el peon
 def cambiar_pieza():
     lista = []
     for p in PIEZAS_JUGADOR:
@@ -92,7 +93,7 @@ def cambiar_pieza():
             pi = "reina_blanca.png"
         return pi
 
-
+#Funcion que muestra los movimentos posibles
 def marcar_mov(casilla, pieza):
     prueba = pieza[:3]
     mov_correcto_paso = []
@@ -398,7 +399,7 @@ def marcar_mov(casilla, pieza):
                 checks["check_abajo_izquierda"] = True
 
     return mov_correcto_paso, mov_correcto_comer
-
+#funcion para volver el tablero sin marcas de movimientos posibles
 def actualizar_color_botones():
     for mov in movimientos_posibles:
         color_casilla = BLANCO if (mov[0] + mov[1]) % 2 == 0 else NEGRO
