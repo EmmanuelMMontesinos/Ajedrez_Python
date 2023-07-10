@@ -18,6 +18,17 @@ PIEZAS_CPU = ["peon_negro.png", "torre_negra.png",
                 "alfil_negro.png", "caballo_negro.png",
                 "rey_negro.png", "reina_negra.png"]
 
+checks_torres = {
+    "torre1b" : (7,0),
+    "torre2b" : (7,7),
+    "torre1n" : (0,0),
+    "torre2n" : (0,7)}
+checks_enrroque = {
+    "torre1b" : None, "torre2b" : None,
+    "torre1n" : None, "torre2n" : None,
+    "reyb" : None, "reyn" : None
+}
+
 def crear_tablero():
     layout = []
     tablero = []
@@ -92,6 +103,29 @@ def cambiar_pieza():
         elif eventos2 == "-reina-":
             pi = "reina_blanca.png"
         return pi
+
+def enroque(pieza):
+    if pieza == "rey_negro.png":
+        if checks_enrroque["reyn"] == None or checks_enrroque["torre1n"] == None or checks_enrroque["torre2n"]:
+            for pw in tablero:
+                pwd = pw[0]
+                if pwd == 0:
+                    if pw[1] != "vacio.png":
+                        return False
+                    else:
+                        pass
+    if pieza == "rey_blanco.png":
+        if checks_enrroque["reyb"] == None or checks_enrroque["torre1b"] == None or checks_enrroque["torre2b"]:
+            for pw in tablero:
+                pwd = pw[0]
+                if pwd == 7:
+                    if pw[1] != "vacio.png":
+                        return False
+                    else:
+                        pass
+        return True
+                    
+
 
 #Funcion que muestra los movimentos posibles
 def marcar_mov(casilla, pieza):
@@ -452,13 +486,15 @@ while True:
                 ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
                 ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
                 actualizar_color_botones()
-                pieza_seleccionada = None
+                
                 movimientos_posibles = []
+            
+
             else:
                 ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
                 ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
                 actualizar_color_botones()
-                pieza_seleccionada = None
+                
                 movimientos_posibles = []
             for i in tablero:
                 if op == i[0]:
@@ -466,8 +502,15 @@ while True:
                     nuevo_tablero2.append(n)
                 else:
                     nuevo_tablero2.append(i)
+            for tab in tablero:
+                if tab[0] == n[0]:
+                    if n[1] == "torre_blanca.png" or n[1] == "torre_negra.png" or n[1] == "rey_blanco.png" or n[1] == "rey_negro.png":
+                        for item in checks_torres.keys():
+                            if checks_torres[item] == pieza_seleccionada:
+                                checks_enrroque[item] = False
             tablero = nuevo_tablero2
             nuevo_tablero = []
+            pieza_seleccionada = None
 
 
     
