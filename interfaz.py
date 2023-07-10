@@ -439,7 +439,7 @@ def actualizar_color_botones():
         color_casilla = BLANCO if (mov[0] + mov[1]) % 2 == 0 else NEGRO
         ventana[mov].update(button_color=("", color_casilla))
 mesa, tablero = crear_tablero()
-ventana = sg.Window("Ajedrez-Bot by Morzan", mesa, resizable=True)
+ventana = sg.Window("Ajedrez-Bot by Morzan", mesa, resizable=True, icon="icono.ico")
 
 pieza_seleccionada = None
 movimientos_posibles = []
