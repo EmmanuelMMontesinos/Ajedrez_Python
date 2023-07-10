@@ -447,14 +447,6 @@ while True:
                     nuevo_tablero.append(i)
             tablero = nuevo_tablero
             nuevo_tablero2 = []
-            for i in tablero:
-                if op == i[0]:
-                    n = (i[0], sprite)
-                    nuevo_tablero2.append(n)
-                else:
-                    nuevo_tablero2.append(i)
-            tablero = nuevo_tablero2
-            nuevo_tablero = []
             if op[0] == 0 and sprite[0] == "p":
                 sprite = cambiar_pieza()
                 ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
@@ -468,6 +460,14 @@ while True:
                 actualizar_color_botones()
                 pieza_seleccionada = None
                 movimientos_posibles = []
+            for i in tablero:
+                if op == i[0]:
+                    n = (i[0], sprite)
+                    nuevo_tablero2.append(n)
+                else:
+                    nuevo_tablero2.append(i)
+            tablero = nuevo_tablero2
+            nuevo_tablero = []
 
 
     
