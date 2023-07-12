@@ -37,6 +37,34 @@ marcador_negro = negras["partida_ganada"]
 movimiento_enrroque = []
 mov_final_enrroque = []
 
+def calculo_piezas(op):
+    op_png = op + ".png"
+    for i in tablero:
+        if op_png == i[1]:
+            pieza = op_png[-9:-4]
+            i_correcta = op + ".ficha"
+            if pieza == "blanca" or pieza == "blanco":
+                    for ciclo2 in blancas.keys():
+                            if i != "partida_ganada":
+                                    result1 = blancas[ciclo2]
+                                    result2 = marcador.marcador_blanco[ciclo2]
+                                    result = result1 - result2
+                                    blancas[ciclo2] = result
+                                    result3 = str(result)
+                                    ventana[i_correcta].update(result3)
+            
+            if pieza == "negra" or pieza == "negro":
+                    for ciclo in negras.keys():
+                            if ciclo != "partida_ganada":
+                                    if op == ciclo:
+                                        negras[ciclo] -= 1
+                                    result1 = negras[ciclo]
+                                    result2 = marcador.marcador_negro2[ciclo]
+                                    result = result2 - result1
+                                    result3 = str(result)
+                                    
+                                    ventana[i_correcta].update(result3)
+
 def rendirse():
     global blancas
     global negras
@@ -158,7 +186,7 @@ def crear_tablero():
     return layout, tablero      
 
 
-def cambiar_pieza():
+def cambiar_pieza(op):
     lista = []
     for p in PIEZAS_JUGADOR:
         lista.append(p[0:-4])
@@ -178,6 +206,7 @@ def cambiar_pieza():
         elif eventos2 == "-reina-":
             pi = "reina_blanca.png"
         emergente.close()
+        
         return pi
 
 def enroque(pieza):
@@ -739,17 +768,32 @@ while True:
         elif pieza_seleccionada:
             nuevo_tablero = []
             sprite = ""
-            
+            sprite_eliminado = ""
             for i in tablero:
                 if pieza_seleccionada == i[0]:
                     sprite = i[1]
                     nv = (i[0], "vacio.png")
-                    nuevo_tablero.append(nv)              
+                    nuevo_tablero.append(nv) 
+                elif op == i[0] and i[1] != "vacio.png":
+                    pase = i[1]
+                    pase2 = pase[:-4]
+                    sprite_eliminado = pase             
+                    nuevo_tablero.append(i)
                 else:
                     nuevo_tablero.append(i)
             if op[0] == 0 and sprite[0] == "p":
                 if op in movimientos_posibles:
-                    sprite = cambiar_pieza()
+                    pieza_comida = sprite_eliminado[:-4]
+
+                    negras[pieza_comida] -= 1
+                    result1 = negras[pieza_comida]
+                    result2 = marcador.marcador_negro2[pieza_comida]
+                    result = result2 - result1
+                    result3 = str(result)
+                    pieza_final = pieza_comida + ".ficha"
+                    ventana[pieza_final].update(result3)
+                    sprite = cambiar_pieza(op)
+
                     ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
                     ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
                     actualizar_color_botones()                
@@ -766,6 +810,7 @@ while True:
                             nuevo_tablero.append(i)
                     tablero = nuevo_tablero
                     nuevo_tablero = []
+                    
             if op in movimientos_posibles:
                 
                 ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
