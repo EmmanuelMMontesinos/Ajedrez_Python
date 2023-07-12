@@ -37,6 +37,8 @@ marcador_negro = negras["partida_ganada"]
 movimiento_enrroque = []
 mov_final_enrroque = []
 
+
+
 def calculo_piezas(op):
     op_png = op + ".png"
     for i in tablero:
@@ -176,9 +178,12 @@ def crear_tablero():
             fila_layout.append(marca)
     layout.append(fila_layout)
     fila_layout = []
-    marcador_bla = sg.Text(f"Blancas:{int(marcador_blanco)}")
-    marcador_ne = sg.Text(f"Negras:{int(marcador_negro)}")
-    rendirse = sg.Button("Rendirse", key="-reiniciar-", size=(10, None))
+    dificuldad = ["Facil", "Normal", "Dificil"]
+    marcador_bla = sg.Text(f"Blancas:{int(marcador_blanco)}", pad=0)
+    marcador_ne = sg.Text(f"Negras:{int(marcador_negro)}", pad=0)
+    nivel_cpu = sg.Button("Dificuldad", key="-nivel-", size=(10, None), pad=0)
+    rendirse = sg.Button("Reiniciar", key="-reiniciar-", size=(10, None), pad=0)
+    fila_layout.append(nivel_cpu)
     fila_layout.append(marcador_bla)
     fila_layout.append(marcador_ne)
     fila_layout.append(rendirse)
@@ -194,7 +199,7 @@ def cambiar_pieza(op):
         sg.Button("", image_filename=RUTA_PIEZAS_CLASICAS + "caballo_blanco.png", key="-caballo-"),
         sg.Button("", image_filename=RUTA_PIEZAS_CLASICAS + "alfil_blanco.png", key="-alfil-"),
         sg.Button("", image_filename=RUTA_PIEZAS_CLASICAS + "reina_blanca.png", key="-reina-")]]
-    emergente = sg.Window("Coronado", cambio)
+    emergente = sg.Window("Coronado", cambio, icon="icono.ico")
     eventos2, valores2 = emergente.read()
     if isinstance:
         if eventos2 == "-torre-":
@@ -643,6 +648,7 @@ pieza_seleccionada = None
 movimientos_posibles = []
 movimientos_defensa = []
 nuevo_tablero2 = []
+nivel_cpu = "-normal-"
 check_disparador_enrroque1 = False
 check_disparador_enrroque2 = False
 while True:
@@ -658,6 +664,21 @@ while True:
         nuevo_tablero2 = []
         check_disparador_enrroque1 = False
         check_disparador_enrroque2 = False
+    if eventos == "-nivel-":
+        selector_nivel = [[sg.Button("Facil", key="-facil-")],
+                        [sg.Button("Normal", key="-normal-")],
+                        [sg.Button("Dificil", key="-dificil-")]]
+        ventana_nivel = sg.Window(nivel_cpu, selector_nivel, icon="icono.ico")
+        eventos2, valores2 = ventana_nivel.read()
+        if eventos2 == "-facil-":
+            nivel_cpu = eventos2
+            ventana_nivel.close()
+        if eventos2 == "-normal-":
+            nivel_cpu = eventos2
+            ventana_nivel.close()
+        if eventos2 == "-dificil-":
+            nivel_cpu = eventos2
+            ventana_nivel.close()
         
     elif isinstance(eventos, tuple):
         sprite = ""
