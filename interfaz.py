@@ -88,15 +88,9 @@ def crear_tablero():
             contador += 1
         layout.append(fila_layout)
     fila_layout = []
-    marcador_bla = sg.Text(f"Blancas:{int(marcador_blanco)}")
-    marcador_ne = sg.Text(f"Negras:{int(marcador_negro)}")
-    fila_layout.append(marcador_bla)
-    fila_layout.append(marcador_ne)
-    layout.append(fila_layout)
-    fila_layout = []
     for i in blancas:
         if i != "partida_ganada":
-            boton = sg.Button(button_text="", size=(6, 4), image_filename=RUTA_PIEZAS_CLASICAS + i + ".png")
+            boton = sg.Button(button_text="", image_size=(26, 48),pad=1, image_filename=RUTA_PIEZAS_CLASICAS + i + ".png")
             marca = sg.Text("0",  key=i)
             fila_layout.append(boton)
             fila_layout.append(marca)
@@ -105,10 +99,18 @@ def crear_tablero():
     for i in negras:
         if i != "partida_ganada":
             cementerio = []
-            boton = sg.Button(button_text="", size=(6, 4), image_filename=RUTA_PIEZAS_CLASICAS + i + ".png", key=i)
+            boton = sg.Button(button_text="", image_size=(26, 48), pad=1, image_filename=RUTA_PIEZAS_CLASICAS + i + ".png", key=i)
             marca = sg.Text("0", key=i)
             fila_layout.append(boton)
             fila_layout.append(marca)
+    layout.append(fila_layout)
+    fila_layout = []
+    marcador_bla = sg.Text(f"Blancas:{int(marcador_blanco)}")
+    marcador_ne = sg.Text(f"Negras:{int(marcador_negro)}")
+    rendirse = sg.Button("Rendirse", key="-reiniciar-", size=(10, None))
+    fila_layout.append(marcador_bla)
+    fila_layout.append(marcador_ne)
+    fila_layout.append(rendirse)
     layout.append(fila_layout)
     return layout, tablero      
 
