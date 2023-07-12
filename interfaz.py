@@ -28,14 +28,55 @@ checks_enrroque = {
     "torre1b" : None, "torre2b" : None,
     "torre1n" : None, "torre2n" : None,
     "reyb" : None, "reyn" : None}
-blancas = marcador.marcador_blanco
-negras = marcador.marcador_negro
+blancas = marcador.marcador_blanco.copy()
+negras = marcador.marcador_negro.copy()
 marcador_blanco = blancas["partida_ganada"]
 marcador_negro = negras["partida_ganada"]
 
 
 movimiento_enrroque = []
 mov_final_enrroque = []
+
+def rendirse():
+    global blancas
+    global negras
+    mesa, tablero2 = crear_tablero()
+    for i in tablero2:
+        ventana[i[0]].update("", image_filename=RUTA_PIEZAS_CLASICAS + i[1])
+    tablero = tablero2
+    blancas = marcador.marcador_blanco.copy()
+    negras = marcador.marcador_negro.copy()
+    nuevo_tablero = []
+    for i in blancas.keys():
+        piezza = i
+        pieza = piezza[-9:-4]
+        i_correcta1 = piezza
+        i_correcta = i_correcta1 + ".ficha" 
+        if i != "partida_ganada":
+            result1 = blancas[i]
+            result2 = marcador.marcador_blanco[i]
+            result = result1 - result2
+            
+            result3 = str(result)
+            ventana[i_correcta].update(result3)
+    for n in negras.keys():
+        piezza = i
+        pieza = piezza[-9:-4]
+        i_correcta1 = piezza[:-4]
+        i_correcta = i_correcta1 + ".ficha"
+        if n != "partida_ganada":
+            i_correcta = n + ".ficha"
+            if piezza[:-4] == n:
+                negras[n] -= 1
+            result1 = negras[n]
+            result2 = marcador.marcador_negro2[n]
+            result = result2 - result1
+            result3 = str(result)
+            
+            ventana[i_correcta].update(result3)
+            
+        
+    return tablero, mesa
 
 def crear_tablero():
     layout = []
@@ -90,17 +131,19 @@ def crear_tablero():
     fila_layout = []
     for i in blancas:
         if i != "partida_ganada":
-            boton = sg.Button(button_text="", image_size=(26, 48),pad=1, image_filename=RUTA_PIEZAS_CLASICAS + i + ".png")
-            marca = sg.Text("0",  key=i)
+            boton = sg.Button(button_text="", image_size=(26, 48),pad=1, image_filename=RUTA_PIEZAS_CLASICAS + i + ".png", key=i + ".png")
+            marca = sg.Text("0",  key=i + ".ficha")
             fila_layout.append(boton)
             fila_layout.append(marca)
     layout.append(fila_layout)
     fila_layout = []
-    for i in negras:
+    for i in negras.keys():
         if i != "partida_ganada":
-            cementerio = []
-            boton = sg.Button(button_text="", image_size=(26, 48), pad=1, image_filename=RUTA_PIEZAS_CLASICAS + i + ".png", key=i)
-            marca = sg.Text("0", key=i)
+            result1 = negras[i]
+            result2 = marcador.marcador_negro[i]
+            result = result1 - result2
+            boton = sg.Button(button_text="", image_size=(26, 48), pad=1, image_filename=RUTA_PIEZAS_CLASICAS + i + ".png", key=i + ".png")
+            marca = sg.Text(f"{result}", key=i + ".ficha")
             fila_layout.append(boton)
             fila_layout.append(marca)
     layout.append(fila_layout)
@@ -577,6 +620,16 @@ while True:
     eventos, valores = ventana.read()
     if eventos == sg.WINDOW_CLOSED:
         break
+    if eventos == "-reiniciar-":
+        tablero, mesa = rendirse()
+        actualizar_color_botones()
+        pieza_seleccionada = None
+        movimientos_posibles = []
+        movimientos_defensa = []
+        nuevo_tablero2 = []
+        check_disparador_enrroque1 = False
+        check_disparador_enrroque2 = False
+        
     elif isinstance(eventos, tuple):
         sprite = ""
         fila, columna = eventos
@@ -727,6 +780,33 @@ while True:
                     if op == i[0]:
                         nv = (op, sprite)
                         nuevo_tablero.append(nv)
+                        piezza = i[1]
+                        pieza = piezza[-9:-4]
+                        i_correcta1 = piezza[:-4]
+                        i_correcta = i_correcta1 + ".ficha"
+                        if pieza == "blanca" or pieza == "blanco":
+                                for ciclo2 in blancas.keys():
+                                        if i != "partida_ganada":
+                                                result1 = blancas[ciclo2]
+                                                result2 = marcador.marcador_blanco[ciclo2]
+                                                result = result1 - result2
+                                                blancas[ciclo2] = result
+                                                result3 = str(result)
+                                                ventana[i_correcta].update(result3)
+                        
+                        if pieza == "negra" or pieza == "negro":
+                                for ciclo in negras.keys():
+                                        if ciclo != "partida_ganada":
+                                                i_correcta = ciclo + ".ficha"
+                                                if piezza[:-4] == ciclo:
+                                                    negras[ciclo] -= 1
+                                                result1 = negras[ciclo]
+                                                result2 = marcador.marcador_negro2[ciclo]
+                                                result = result2 - result1
+                                                result3 = str(result)
+                                                
+                                                ventana[i_correcta].update(result3)
+                        
                     else:
                         nuevo_tablero.append(i)
                 tablero = nuevo_tablero
