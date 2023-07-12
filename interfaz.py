@@ -2,6 +2,7 @@ import time
 import tkinter as tk
 import PySimpleGUI as sg
 import ajedrez
+import marcador
 
 BLANCO = '#F0D9B5'
 NEGRO = '#B58863'
@@ -27,6 +28,12 @@ checks_enrroque = {
     "torre1b" : None, "torre2b" : None,
     "torre1n" : None, "torre2n" : None,
     "reyb" : None, "reyn" : None}
+blancas = marcador.marcador_blanco
+negras = marcador.marcador_negro
+marcador_blanco = blancas["partida_ganada"]
+marcador_negro = negras["partida_ganada"]
+
+
 movimiento_enrroque = []
 mov_final_enrroque = []
 
@@ -80,6 +87,29 @@ def crear_tablero():
             fila_layout.append(casilla)
             contador += 1
         layout.append(fila_layout)
+    fila_layout = []
+    marcador_bla = sg.Text(f"Blancas:{int(marcador_blanco)}")
+    marcador_ne = sg.Text(f"Negras:{int(marcador_negro)}")
+    fila_layout.append(marcador_bla)
+    fila_layout.append(marcador_ne)
+    layout.append(fila_layout)
+    fila_layout = []
+    for i in blancas:
+        if i != "partida_ganada":
+            boton = sg.Button(button_text="", size=(6, 4), image_filename=RUTA_PIEZAS_CLASICAS + i + ".png")
+            marca = sg.Text("0",  key=i)
+            fila_layout.append(boton)
+            fila_layout.append(marca)
+    layout.append(fila_layout)
+    fila_layout = []
+    for i in negras:
+        if i != "partida_ganada":
+            cementerio = []
+            boton = sg.Button(button_text="", size=(6, 4), image_filename=RUTA_PIEZAS_CLASICAS + i + ".png", key=i)
+            marca = sg.Text("0", key=i)
+            fila_layout.append(boton)
+            fila_layout.append(marca)
+    layout.append(fila_layout)
     return layout, tablero      
 
 
@@ -91,10 +121,9 @@ def cambiar_pieza():
         sg.Button("", image_filename=RUTA_PIEZAS_CLASICAS + "caballo_blanco.png", key="-caballo-"),
         sg.Button("", image_filename=RUTA_PIEZAS_CLASICAS + "alfil_blanco.png", key="-alfil-"),
         sg.Button("", image_filename=RUTA_PIEZAS_CLASICAS + "reina_blanca.png", key="-reina-")]]
-    emergente = sg.Window("Peon Coronado", cambio)
+    emergente = sg.Window("Coronado", cambio)
     eventos2, valores2 = emergente.read()
     if isinstance:
-        emergente.close()
         if eventos2 == "-torre-":
             pi = "torre_blanca.png"
         elif eventos2 == "-caballo-":
@@ -103,6 +132,7 @@ def cambiar_pieza():
             pi = "alfil_blanco.png"
         elif eventos2 == "-reina-":
             pi = "reina_blanca.png"
+        emergente.close()
         return pi
 
 def enroque(pieza):
@@ -626,12 +656,7 @@ while True:
                                 check_disparador_enrroque1 = True
                                 check_disparador_enrroque2 = True
                                 
-                            
         actualizar_color_botones()
-        
-                    
-                      
-            
         if not pieza_seleccionada and check_disparador_enrroque1 == False:
             for ele in tablero:
                 if eventos == ele[0]:
@@ -654,10 +679,8 @@ while True:
                             if (7, 2) in mov_final_enrroque or (7, 6) in mov_final_enrroque:
                                 for cord in mov_final_enrroque:
                                     ventana[cord].update(button_color=("", "yellow"))
-                                
+            
                             
-                
-
         elif pieza_seleccionada:
             nuevo_tablero = []
             sprite = ""
@@ -669,6 +692,25 @@ while True:
                     nuevo_tablero.append(nv)              
                 else:
                     nuevo_tablero.append(i)
+            if op[0] == 0 and sprite[0] == "p":
+                if op in movimientos_posibles:
+                    sprite = cambiar_pieza()
+                    ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
+                    ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
+                    actualizar_color_botones()                
+                    movimientos_posibles = []
+                    movimientos_posibles = []
+                    pieza_seleccionada = None
+                    tablero = nuevo_tablero
+                    nuevo_tablero = []
+                    for i in tablero:
+                        if op == i[0]:
+                            nv = (op, sprite)
+                            nuevo_tablero.append(nv)
+                        else:
+                            nuevo_tablero.append(i)
+                    tablero = nuevo_tablero
+                    nuevo_tablero = []
             if op in movimientos_posibles:
                 
                 ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
@@ -689,12 +731,6 @@ while True:
                 nuevo_tablero = []
 
 
-            if op[0] == 0 and sprite[0] == "p":
-                sprite = cambiar_pieza()
-                ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
-                ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
-                actualizar_color_botones()                
-                movimientos_posibles = []
             
 
 
@@ -702,6 +738,14 @@ while True:
                 actualizar_color_botones()
                 movimientos_posibles = []
                 pieza_seleccionada = None
+        
+                    
+                      
+            
+                                
+                            
+                
+
         
         check_disparador_enrroque1 = False
 
