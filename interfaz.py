@@ -178,7 +178,6 @@ def crear_tablero():
             fila_layout.append(marca)
     layout.append(fila_layout)
     fila_layout = []
-    dificuldad = ["Facil", "Normal", "Dificil"]
     marcador_bla = sg.Text(f"Blancas:{int(marcador_blanco)}", pad=0)
     marcador_ne = sg.Text(f"Negras:{int(marcador_negro)}", pad=0)
     nivel_cpu = sg.Button("Dificuldad", key="-nivel-", size=(10, None), pad=0)
@@ -651,6 +650,10 @@ nuevo_tablero2 = []
 nivel_cpu = "-normal-"
 check_disparador_enrroque1 = False
 check_disparador_enrroque2 = False
+jaque_blancas = False
+pos_jaque_blancas = None
+jaque_negras = False
+pos_jaque_negras = None
 while True:
     eventos, valores = ventana.read()
     if eventos == sg.WINDOW_CLOSED:
@@ -665,9 +668,9 @@ while True:
         check_disparador_enrroque1 = False
         check_disparador_enrroque2 = False
     if eventos == "-nivel-":
-        selector_nivel = [[sg.Button("Facil", key="-facil-")],
-                        [sg.Button("Normal", key="-normal-")],
-                        [sg.Button("Dificil", key="-dificil-")]]
+        selector_nivel = [[sg.Button("Facil", key="-facil-"),
+                        sg.Button("Normal", key="-normal-"),
+                        sg.Button("Dificil", key="-dificil-")]]
         ventana_nivel = sg.Window(nivel_cpu, selector_nivel, icon="icono.ico")
         eventos2, valores2 = ventana_nivel.read()
         if eventos2 == "-facil-":
@@ -802,17 +805,19 @@ while True:
                     nuevo_tablero.append(i)
                 else:
                     nuevo_tablero.append(i)
+#Coronar Peon
             if op[0] == 0 and sprite[0] == "p":
                 if op in movimientos_posibles:
-                    pieza_comida = sprite_eliminado[:-4]
+                    if sprite_eliminado != "":
+                        pieza_comida = sprite_eliminado[:-4]
 
-                    negras[pieza_comida] -= 1
-                    result1 = negras[pieza_comida]
-                    result2 = marcador.marcador_negro2[pieza_comida]
-                    result = result2 - result1
-                    result3 = str(result)
-                    pieza_final = pieza_comida + ".ficha"
-                    ventana[pieza_final].update(result3)
+                        negras[pieza_comida] -= 1
+                        result1 = negras[pieza_comida]
+                        result2 = marcador.marcador_negro2[pieza_comida]
+                        result = result2 - result1
+                        result3 = str(result)
+                        pieza_final = pieza_comida + ".ficha"
+                        ventana[pieza_final].update(result3)
                     sprite = cambiar_pieza(op)
 
                     ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
