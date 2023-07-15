@@ -247,67 +247,53 @@ def cambiar_pieza(op):
         return pi
 #detecta y ejecuta el enrroque del rey
 def enroque(pieza):
+    check_1 = True
+    check_2 = True
     if pieza == "rey_negro.png":
         for tab in tablero:
-            if tab[1] == "torre_negra.png" and tab[0] == (7, 0) and ((7, 4), "rey_negro.png") in tablero:
-                if checks_enrroque["reyn"] == None or checks_enrroque["torre1n"] == None or checks_enrroque["torre2n"]:
-                    for pw in tablero:
-                        pwd = pw[0]
-                        if pwd == 0:
-                            if pw[1] != "vacio.png":
-                                return False, 
-                            else:
-                                pass
+            if tab == ((0, 3), "reina_negra.png"):
+                check_2 = False
+            if ((0, 1), "caballo_blanco.png") == tab:
+                check_2 = False
+            if tab == ((0, 2), "alfil_blanco.png"):
+                check_2 = False
+            if tab == ((0, 5), "alfil_blanco.png"):
+                check_1 = False
+            if tab == ((0, 6), "caballo_blanco.png"):
+                check_1 = False
+        return check_1, check_2
     if pieza == "rey_blanco.png":
         for tab in tablero:
-            if tab[1] == "torre_blanca.png" and tab[0] == (7, 0) and ((7, 4), "rey_blanco.png") in tablero:
-                if checks_enrroque["reyb"] == None or checks_enrroque["torre1b"] == None or checks_enrroque["torre2b"]:
-                    for pw in tablero:
-                        pwd = pw[0]
-                        pwdw = pwd[1]
-                        if pwd == (7, 6) or pwd == (7, 2):
-                            if pw[1] == "vacio.png":
-                                return True, pwd
-                            else:
-                                pass
-            if tab[1] == "torre_blanca.png" and tab[0] == (7, 7) and ((7, 4), "rey_blanco.png") in tablero:
-                if checks_enrroque["reyb"] == None or checks_enrroque["torre1b"] == None or checks_enrroque["torre2b"]:
-                    for pw in tablero:
-                        pwd = pw[0]
-                        pwdw = pwd[1]
-                        if pwd == (7, 6) or pwd == (7, 2):
-                            if pw[1] == "vacio.png":
-                                return True, pwd
-                            else:
-                                pass
+            if tab == ((7, 3), "reina_blanca.png"):
+                check_1 = True#derecha
+                check_2 = False
+            if ((7, 1), "caballo_blanco.png") == tab:
+                check_1 = True
+                check_2 = False
+            if tab == ((7, 2), "alfil_blanco.png"):
+                check_1 = True
+                check_2 = False
+            if tab == ((7, 5), "alfil_blanco.png"):
+                check_1 = False
+                check_2 = True
+            if tab == ((7, 6), "caballo_blanco.png"):
+                check_1 = False
+                check_2 = True
+        return check_1, check_2
 
-        return False, None
                     
 def jaque(pos_rey, bando_rey, mov_correcto_paso):
     if bando_rey == "blancas":
-        pieza = "rey_blanco.png"
-        for tab in tablero:
-            tipo_pieza = tab[1]
-            if tipo_pieza in PIEZAS_CPU:
-                casilla = tab[0]
-                pieza = tab[1]
-                
-                if pos_rey in mov_correcto_paso:
-                    ventana[pos_rey].update(background_color="orange")
-                    return True
-    elif bando_rey == "negras":
-        pieza = "rey_negro.png"
-        for tab in tablero:
-            tipo_pieza = tab[1]
-            if tipo_pieza in PIEZAS_JUGADOR:
-                casilla = tab[0]
-                pieza = tab[1]
-                mov_correcto_paso, mov_correcto_comer, mov_defensa, mov_enrroque_decidido = marcar_mov(casilla, pieza)
-                if pos_rey in mov_correcto_paso:
-                    ventana[pos_rey].update(background_color="orange")
-                    return True
-    return False
-
+        bando = PIEZAS_JUGADOR
+    else:
+        bando = PIEZAS_CPU
+    for tab in tablero:
+        if tab[1] in bando:
+            mov_paso, mov_comer, mov_defensa, mov_enrroque = marcar_mov(tab[0], tab[1])
+            if pos_rey in mov_comer:
+                return True
+    else:
+        return False
 
 
 #muestra los movimentos posibles
@@ -325,6 +311,7 @@ def marcar_mov(casilla, pieza):
     mov_enrroque = []
     mov_posibles = []
     mov_enrroque_final = []
+    mov_enrroque_decidido = []
     if pieza[0] == "p":
         if casilla[0] == 6:
             mov_posibles.append((casilla[0] - 1, casilla[1]))
@@ -605,25 +592,25 @@ def marcar_mov(casilla, pieza):
             "check_abajo_derecha" : False,
             "check_abajo_izquierda" : False
             }
-        check_enrroque_posible,mov_enrroque_decidido = enroque(pieza)
+        check_1 , check_2 = enroque(pieza)
+        if check_1 == True and pieza == "rey_blanco.png":
+            mov_enrroque.append((7, 6))
+        if check_1 == True and pieza == "rey_negro.png":
+            mov_enrroque.append((0, 6))
+        if check_2 == True and pieza == "rey_blanco.png":
+            mov_enrroque.append((7, 2))
+        if check_2 == True and pieza == "rey_negro.png":
+            mov_enrroque.append((0, 2))
         jugada = (casilla[0] + 1, casilla[1] + 1)
         jugada2 = (casilla[0] - 1, casilla[1] - 1)
         jugada3 = (casilla[0] - 1, casilla[1] + 1)
         jugada4 = (casilla[0] + 1, casilla[1] - 1)
         jugada5 = (casilla[0] + 1, casilla[1])
-        if check_enrroque_posible:
-            for n in range(8):
-                movi = (casilla[0], casilla[1] + n)
-                mov_enrroque.append(movi)
-        else:
-            jugada6 = (casilla[0], casilla[1] + 1)
+        if mov_enrroque:
+            check_enrroque_posible = True
+        jugada6 = (casilla[0], casilla[1] + 1)
         jugada7 = (casilla[0] - 1, casilla[1])
-        if check_enrroque_posible:
-            for n in range(8):
-                movi = (casilla[0], casilla[1] - n)
-                mov_enrroque.append(movi)
-        else:
-            jugada8 = (casilla[0], casilla[1] - 1)
+        jugada8 = (casilla[0], casilla[1] - 1)
         for cosas in tablero:
             if jugada == cosas[0] and cosas[1] == "vacio.png" and checks["check_derecha"] != True:
                 mov_correcto_paso.append(jugada)
@@ -670,25 +657,16 @@ def marcar_mov(casilla, pieza):
                 mov_defensa.append(jugada5)
                 checks["check_arriba_derecha"] = True
 
-            if check_enrroque_posible != True:
-                if jugada6 == cosas[0] and cosas[1] == "vacio.png" and checks["check_arriba_izquierda"] != True:
-                    mov_correcto_paso.append(jugada6)
-                elif jugada6 == cosas[0] and cosas[1] in defensor and checks["check_arriba_izquierda"] != True:
-                    mov_correcto_comer.append(jugada6)
-                    checks["check_arriba_izquierda"] = True
-                elif jugada6 == cosas[0] and cosas[1] in atacante and checks["check_arriba_izquierda"] != True:
-                    mov_defensa.append(jugada6)
-                    checks["check_arriba_izquierda"] = True
-            else:
-                movimientos_enrroque = [(7, 2), (7, 6)]
-                for movi in movimientos_enrroque:
-                    
-                    if movi == cosas[0] and cosas[1] in defensor and checks["check_arriba_izquierda"] != True:
-                        checks["check_arriba_izquierda"] = True
-                    elif movi == cosas[0] and cosas[1] in atacante and checks["check_arriba_izquierda"] != True:
-                        checks["check_arriba_izquierda"] = True
-                    elif movi == cosas[0] and cosas[1] in atacante and checks["check_arriba_izquierda"] == True:
-                        mov_enrroque_final.append(movi)
+            
+            if jugada6 == cosas[0] and cosas[1] == "vacio.png" and checks["check_arriba_izquierda"] != True:
+                mov_correcto_paso.append(jugada6)
+            elif jugada6 == cosas[0] and cosas[1] in defensor and checks["check_arriba_izquierda"] != True:
+                mov_correcto_comer.append(jugada6)
+                checks["check_arriba_izquierda"] = True
+            elif jugada6 == cosas[0] and cosas[1] in atacante and checks["check_arriba_izquierda"] != True:
+                mov_defensa.append(jugada6)
+                checks["check_arriba_izquierda"] = True
+            
             if jugada7 == cosas[0] and cosas[1] == "vacio.png" and checks["check_abajo_derecha"] != True:
                 mov_correcto_paso.append(jugada7)
             elif jugada7 == cosas[0] and cosas[1] in defensor and checks["check_abajo_derecha"] != True:
@@ -697,27 +675,21 @@ def marcar_mov(casilla, pieza):
             elif jugada7 == cosas[0] and cosas[1] in atacante and checks["check_abajo_derecha"] != True:
                 mov_defensa.append(jugada7)
                 checks["check_abajo_derecha"] = True
-            if check_enrroque_posible != True:
-                if jugada8 == cosas[0] and cosas[1] == "vacio.png" and checks["check_abajo_izquierda"] != True:
-                    mov_correcto_paso.append(jugada8)
-                elif jugada8 == cosas[0] and cosas[1] in defensor and checks["check_abajo_izquierda"] != True:
-                    mov_correcto_comer.append(jugada8)
-                    checks["check_abajo_izquierda"] = True
-                elif jugada8 == cosas[0] and cosas[1] in atacante and checks["check_abajo_izquierda"] != True:
-                    mov_defensa.append(jugada8)
-                    checks["check_abajo_izquierda"] = True
-            else:
-                movimientos_enrroque = [(7, 2), (7, 6)]
-                for movi in movimientos_enrroque:
-                    if movi == cosas[0] and cosas[1] in defensor and checks["check_abajo_izquierda"] != True:
-                        mov_correcto_comer.append(movi)
-                        checks["check_abajo_izquierda"] = True
-                    elif movi == cosas[0] and cosas[1] in atacante and checks["check_abajo_izquierda"] != True:
-                        checks["check_abajo_izquierda"] = True
-                    elif movi == cosas[0] and cosas[1] in atacante and checks["check_arriba_izquierda"] == True:
-                        if movi in checks_torres:
-                            mov_enrroque_final.append(movi)
+
+            if jugada8 == cosas[0] and cosas[1] == "vacio.png" and checks["check_abajo_izquierda"] != True:
+                mov_correcto_paso.append(jugada8)
+            elif jugada8 == cosas[0] and cosas[1] in defensor and checks["check_abajo_izquierda"] != True:
+                mov_correcto_comer.append(jugada8)
+                checks["check_abajo_izquierda"] = True
+            elif jugada8 == cosas[0] and cosas[1] in atacante and checks["check_abajo_izquierda"] != True:
+                mov_defensa.append(jugada8)
+                checks["check_abajo_izquierda"] = True
+            if mov_enrroque:
+                for mov in mov_enrroque:
+                    if mov not in mov_enrroque:
+                        mov_enrroque_decidido.append(mov)
     try:
+        
         return mov_correcto_paso, mov_correcto_comer, mov_defensa, mov_enrroque_decidido
     except:
         mov_enrroque_decidido = mov_final_enrroque
@@ -756,21 +728,16 @@ jaque_negras = False
 pos_jaque_negras = None
 turno = 0
 cpu_turno = 1
-ultima_pieza_cpu = ""
-ultima_ficha = ""
+
+ultima_ficha = []
 #inicio de aplicacion
 while True:
     if turno >= 1 and turno == cpu_turno:
         if nivel_cpu == "-facil-":
             nuevo_tablero = []
-            antigua_pos, tipo_ficha, nueva_pos, ultima_pieza_cpu, ultima_ficha = cpu.jugada_facil(tablero,
+            antigua_pos, tipo_ficha, nueva_pos = cpu.jugada_facil(tablero,
                                                                   PIEZAS_CPU,
-                                                                  PIEZAS_JUGADOR,
-                                                                  checks_torres,
-                                                                  checks_enrroque,
-                                                                  ultima_pieza_cpu,
-                                                                  ultima_ficha
-                                                                  )
+                                                                  PIEZAS_JUGADOR)
             if isinstance(nueva_pos, list):
                 if len(nueva_pos) == 1:
                     for un in nueva_pos:
@@ -944,6 +911,7 @@ while True:
                             if (7, 2) in mov_final_enrroque or (7, 6) in mov_final_enrroque:
                                 for cord in mov_final_enrroque:
                                     ventana[cord].update(button_color=("", "yellow"))
+                                    movimientos_posibles.append(cord)
             
                             
         elif pieza_seleccionada:
@@ -967,7 +935,8 @@ while True:
                     nuevo_tablero.append(i)
             #Coronar Peon
             if op[0] == 0 and sprite[0] == "p":
-                check_jaque = jaque(pos_rey, "blancas", movimientos_posibles)  
+                
+                check_jaque = cpu.peligro_2(tablero, pos_rey, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)
                 if check_jaque != True:
                     if op in movimientos_posibles:
                         if sprite_eliminado != "":
@@ -1001,7 +970,7 @@ while True:
                         nuevo_tablero = []
                
             if op in movimientos_posibles:
-                check_jaque = jaque(pos_rey, "blancas", movimientos_posibles)  
+                check_jaque = cpu.peligro(tablero,pos_rey, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)  
                 if check_jaque != True:
                     ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
                     ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")

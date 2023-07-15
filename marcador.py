@@ -1,5 +1,14 @@
 import PySimpleGUI as sg
 
+PUNTUACION_ALGORITMO = {"jaque" : 10,
+                        "c_reina" : 8,
+                        "c_pieza" : 6,
+                        "a_reina" : 5,
+                        "a_pieza" : 3,
+                        "c_peon" : 2,
+                        "mover" : 1,
+                        "desprotejer" : -2}
+
 marcador_blanco = {"partida_ganada" : 0,
                    "torre_blanca" : 2,
                    "peon_blanco" : 8,
@@ -101,7 +110,6 @@ casillas_tablero = {
 }
 
 
-
 def info_jugada(nueva):
         if isinstance(nueva, tuple) != True:
                 return nueva
@@ -130,4 +138,4 @@ def act_marc_piezas(pieza, bando, ventana):
                                 result = str(result)
                                 ipo = i + ".ficha"
                                 ventana[ipo].update(f"{result}")
-                
+
