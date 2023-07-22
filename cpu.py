@@ -409,16 +409,15 @@ def ratio_simulacion(candidatos):
 
 def peligro(tablero, pos, bando, piezas_cpu, piezas_jugador):
     if bando == "blancas":
-        medio = "negras"
+        medio = piezas_cpu
     else:
-        medio = "blancas"
+        medio = piezas_jugador
     for tab in tablero:
-        if tab[0] == pos:
-            candidatos = calcular_ratio_peligro(tablero, piezas_cpu, piezas_jugador, medio)
-            for candi in candidatos:
-                for mov in candi[:3]:
-                    if mov == pos:
-                        return True
+        if tab[1] in medio:
+            mov_paso, mov_comer, mov_defensa = marcar_mov(tab[0],tab[1],piezas_cpu,piezas_jugador,tablero)
+            for mov in mov_comer:
+                if mov == pos:
+                    return True
     return False
 
 def calcular_ratio_peligro(tablero, piezas_cpu, piezas_jugador,bando):
@@ -435,7 +434,7 @@ def calcular_ratio_peligro(tablero, piezas_cpu, piezas_jugador,bando):
                 for tab2 in tablero:
                     if tab2[0] == mov:
                         #comprobar si va ha ser comida
-                        check_peligro = peligro(tablero, mov, "negras", piezas_cpu, piezas_jugador)
+                        check_peligro = peligro(tablero, mov, bando, piezas_cpu, piezas_jugador,)
                         if check_peligro == True:
                             ratio -= 10000000000
                         selecion_pi = tab2[1]
@@ -461,7 +460,12 @@ def calcular_ratio_peligro(tablero, piezas_cpu, piezas_jugador,bando):
                             ratio -= 15
                         if pi == "peo":
                             ratio -= 5
-            simulacion_candidatos.append((tab[0], tab[1], ratio, mov_comer, mov_paso, mov_defensa))
+            check_peligro = peligro(tablero,tab[1],bando,piezas_cpu,piezas_jugador)
+            if check_peligro == True:
+                sim_candidat = (tab[0], tab[1], ratio - 100000, mov_comer, mov_paso, mov_defensa)
+                simulacion_candidatos.append()
+            sim_candidat = (tab[0], tab[1], ratio, mov_comer, mov_paso, mov_defensa)
+            simulacion_candidatos.append()
             ratio = 0
     return simulacion_candidatos
 
@@ -470,8 +474,10 @@ def calcular_ratio(tablero, piezas_cpu, piezas_jugador,bando):
     ratio = 0
     if bando == "blancas":
         set_piezas = piezas_jugador
+        contrario = "negras"
     else:
         set_piezas = piezas_cpu
+        contrario = "blancas"
     simulacion_candidatos = []
     all_moves = []
     for tab in tablero:
@@ -481,11 +487,8 @@ def calcular_ratio(tablero, piezas_cpu, piezas_jugador,bando):
                 for tab2 in tablero:
                     if tab2[0] == mov:
                         #comprobar si va ha ser comida
-                        check_peligro = peligro(tablero, mov, "negras", piezas_cpu, piezas_jugador)
-                        if check_peligro == True:
-                            ratio -= 10000000000
-                            all_moves.append((ratio, tab[0], tab[1], mov))
-                            ratio = 0
+                        
+                        
                         selecion_pi = tab2[1]
                         pi = selecion_pi[:3]
                         if pi == "rey":
@@ -493,28 +496,24 @@ def calcular_ratio(tablero, piezas_cpu, piezas_jugador,bando):
                             all_moves.append((ratio, tab[0], tab[1], mov))
                             ratio = 0
                         if pi == "rei":
-                            ratio += 8
+                            ratio += 800
                             all_moves.append((ratio, tab[0], tab[1], mov))
                             ratio = 0
                         if pi == "alf" or pi == "cab" or pi == "tor":
-                            ratio += 6
+                            ratio += 600
                             all_moves.append((ratio, tab[0], tab[1], mov))
                             ratio = 0
                         if pi == "peo":
-                            ratio += 3
+                            ratio += 300
                             all_moves.append((ratio, tab[0], tab[1], mov))
                             ratio = 0
             
             for mov in mov_paso:
-                check_peligro = peligro(tablero, mov, "negras", piezas_cpu, piezas_jugador)
-                if check_peligro == True:
-                    ratio -= 10000000000
-                    all_moves.append((ratio, tab[0], tab[1], mov))
-                    ratio = 0
-                else:
-                    ratio += 1
-                    all_moves.append((ratio, tab[0], tab[1], mov))
-                    ratio = 0
+
+                
+                ratio += 1
+                all_moves.append((ratio, tab[0], tab[1], mov))
+                ratio = 0
             
             for mov in mov_defensa:
                 for tab2 in tablero:
@@ -522,18 +521,16 @@ def calcular_ratio(tablero, piezas_cpu, piezas_jugador,bando):
                         selecion_pi = tab2[1]
                         pi = selecion_pi[:3]
                         if pi == "rei":
-                            ratio -= 50
-                            all_moves.append((ratio, tab[0], tab[1], mov))
-                            ratio = 0
-                        if pi == "alf" or pi == "cab" or pi == "tor":
                             ratio -= 15
-                            all_moves.append((ratio, tab[0], tab[1], mov))
-                            ratio = 0
+                            
+                            
+                        if pi == "alf" or pi == "cab" or pi == "tor":
+                            ratio -= 10
+                            
+                            
                         if pi == "peo":
                             ratio -= 5
-                            all_moves.append((ratio, tab[0], tab[1], mov))
-                            ratio = 0
-            
+         
     return all_moves
     
 
@@ -556,7 +553,7 @@ def jugada_facil(tablero, piezas_cpu, piezas_jugador):
     ratio = 0
     candidatos = []
     elecion = ()
-    ratio_elecion = 0
+    ratio_global_check = 0
     original_tablero = tablero
     nuevo_tablero = []
     candidatos = calcular_ratio(tablero,piezas_cpu,piezas_jugador, "negras")
@@ -564,49 +561,35 @@ def jugada_facil(tablero, piezas_cpu, piezas_jugador):
     mejor_candidato = []
     nuevo_ratio = 0
     ratio_global = 0
+    salida = 0
     #genero nuevos tableros para la simulacion
     candidatos_finales = []
     for candi in candidatos:
         #comer
+        ratio_elecion = candi[0]
         candidatos_comer = []
         ciclo_mov = 0
-        for elemento in candi:
-            if ciclo_mov == 3:
-                #1º ciclo simulacion
-                simulacion_tablero = generar_tablero_simulado(tablero, candi[1], candi[1], elemento)
-                candidatos_enemigos = calcular_ratio(simulacion_tablero, piezas_cpu, piezas_jugador, "blancas")
-                nuevo_ratio = ratio + candi[0]
-                for candi2 in candidatos_enemigos:
-                    #2º ciclo simulacion
-                    for elemento2 in candi2:
-                        if ciclo_mov == 3:
-                            simulacion_tablero = generar_tablero_simulado(simulacion_tablero, candi2[1], candi2[1], elemento2)
-                            candidatos_aliados = calcular_ratio(simulacion_tablero, piezas_cpu, piezas_jugador, "blancas")
-                            nuevo_ratio = ratio + candi2[0]
-                            for candi3 in candidatos_aliados:
-                                for elemento3 in candi3:
-                                    if ciclo_mov == 3:
-                                        #1º ciclo simulacion
-                                        simulacion_tablero = generar_tablero_simulado(simulacion_tablero, candi3[1], candi3[1], elemento3)
-                                        candidatos_enemigos2 = calcular_ratio(simulacion_tablero, piezas_cpu, piezas_jugador, "blancas")
-                                        nuevo_ratio = ratio + candi3[0]
-                                        for candi4 in candidatos_enemigos2:
-                                            #2º ciclo simulacion
-                                            for elemento3 in candi4:
-                                                if ciclo_mov == 3:
-                                                    simulacion_tablero = generar_tablero_simulado(simulacion_tablero, candi4[1], candi4[1],
-                                                                                                   elemento4)
-                                                    candidatos_aliados2 = calcular_ratio(simulacion_tablero, piezas_cpu, piezas_jugador, "blancas")
-                                                    nuevo_ratio = ratio + candi4[0]
-        ficha_paso = ((candi[0] + nuevo_ratio), candi[1], candi[2], candi[3])
-        jugada_final.append(ficha_paso)
-    for jugadas in jugada_final:
+        #1º ciclo simulacion
+        simulacion_tablero = generar_tablero_simulado(tablero, candi[1], candi[2], candi[0])
+        candidatos_enemigos = calcular_ratio(simulacion_tablero, piezas_cpu, piezas_jugador, "blancas")
+        nuevo_ratio = ratio_elecion + candi[0]
+        for candi2 in candidatos_enemigos:
+            nuevo_ratio -= candi2[0]
         
-        if jugadas[0] > ratio_global:
-            antigua_pos = jugadas[1]
-            tipo_ficha = jugadas[2]
-            nueva_pos = jugadas[3]
-            ratio_global = jugadas[0]
+        if ratio_global < nuevo_ratio or ratio_global_check == 0:
+            ratio_global = nuevo_ratio
+            ficha_paso = [(candi[0] + nuevo_ratio), candi[1], candi[2], candi[3]]
+            jugada_final = ficha_paso
+            nuevo_ratio = 0
+            ratio_global_check = 1
+                
+        nuevo_ratio = 0
+            
+  
+    antigua_pos = jugada_final[1]
+    tipo_ficha = jugada_final[2]
+    nueva_pos = jugada_final[3]
+    ratio_global = jugada_final[0]
     
     
 

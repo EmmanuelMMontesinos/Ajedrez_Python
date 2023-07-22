@@ -251,34 +251,57 @@ def enroque(pieza):
     check_2 = True
     if pieza == "rey_negro.png":
         for tab in tablero:
+            if tab[0] != (0, 4) and tab[1] == "rey_negro.png":
+                check_1 = False
+                check_2 = False
+            if tab[0] != (0, 0) and tab[1] == "torre_negra.png":
+                ciclo += 1
+                if ciclo ==2:
+                    check_2 = False
             if tab == ((0, 3), "reina_negra.png"):
                 check_2 = False
-            if ((0, 1), "caballo_blanco.png") == tab:
+            if ((0, 1), "caballo_negro.png") == tab:
                 check_2 = False
-            if tab == ((0, 2), "alfil_blanco.png"):
+            if tab == ((0, 2), "alfil_negro.png"):
                 check_2 = False
-            if tab == ((0, 5), "alfil_blanco.png"):
+            if tab == ((0, 5), "alfil_negro.png"):
                 check_1 = False
-            if tab == ((0, 6), "caballo_blanco.png"):
+            if tab == ((0, 6), "caballo_negro.png"):
                 check_1 = False
+            if tab[0] != (0,7) and tab[1] == "tore_negra.png":
+                ciclo += 1
+                if ciclo ==2:
+                    check_1 = False
         return check_1, check_2
     if pieza == "rey_blanco.png":
+        ciclo = 0
         for tab in tablero:
+            if tab[0] != (7, 4) and tab[1] == "rey_blanco.png":
+                check_1 = False
+                check_2 = False
+            if tab[0] != (7, 0) and tab[1] == "torre_blanca.png":
+                ciclo += 1
+                if ciclo ==3:
+                    check_1 = False
             if tab == ((7, 3), "reina_blanca.png"):
-                check_1 = True#derecha
+
                 check_2 = False
             if ((7, 1), "caballo_blanco.png") == tab:
-                check_1 = True
+
                 check_2 = False
             if tab == ((7, 2), "alfil_blanco.png"):
-                check_1 = True
+
                 check_2 = False
             if tab == ((7, 5), "alfil_blanco.png"):
                 check_1 = False
-                check_2 = True
+
             if tab == ((7, 6), "caballo_blanco.png"):
                 check_1 = False
-                check_2 = True
+            if tab[0] != (7,7) and tab[1] == "tore_blanca.png":
+                ciclo += 1
+                if ciclo ==3:
+                    check_2 = False
+
         return check_1, check_2
 
                     
@@ -684,10 +707,10 @@ def marcar_mov(casilla, pieza):
             elif jugada8 == cosas[0] and cosas[1] in atacante and checks["check_abajo_izquierda"] != True:
                 mov_defensa.append(jugada8)
                 checks["check_abajo_izquierda"] = True
-            if mov_enrroque:
-                for mov in mov_enrroque:
-                    if mov not in mov_enrroque:
-                        mov_enrroque_decidido.append(mov)
+    if mov_enrroque:
+        for mov in mov_enrroque:
+
+            mov_enrroque_decidido.append(mov)
     try:
         
         return mov_correcto_paso, mov_correcto_comer, mov_defensa, mov_enrroque_decidido
@@ -707,7 +730,7 @@ def actualizar_color_botones():
             if ilem != []:
                 if ilem == (7,2) or ilem == (7,6):
                     color_casilla = BLANCO if (ilem[0] + ilem[1] - 1) % 2 == 0 else NEGRO
-                    ventana[mov_enrroque].update(button_color=("", color_casilla))
+                    ventana[ilem].update(button_color=("", color_casilla))
     
 mesa, tablero = crear_tablero()
 ventana = sg.Window("Ajedrez-Bot by Emmanuel M Montesinos", mesa, resizable=True, icon="icono.ico",
@@ -727,17 +750,32 @@ pos_jaque_blancas = None
 jaque_negras = False
 pos_jaque_negras = None
 turno = 0
-cpu_turno = 1
-
+cpu_turno = 0
 ultima_ficha = []
+game = True
+
 #inicio de aplicacion
 while True:
-    if turno >= 1 and turno == cpu_turno:
+    if nueva_pos == None:
+        nueva_pos = "Inicio"
+    ultima_casilla = marcador.info_jugada(nueva_pos)
+    ventana["-info-"].update(f"{ultima_casilla}")
+    if turno >= 1 and cpu_turno == turno - 1:
+        check_victoria_blancas, check_victoria_negras = ajedrez.victoria(tablero)
+        if check_victoria_blancas == False:
+            sg.popup("Victoria Negras", title="Derrota")
+            game = False
+        if check_victoria_negras == False:
+            sg.popup("Victoria Blancas", title="Victoria")
+            game = False
+        if game == False:
+            cpu_turno += 10
+            continue
         if nivel_cpu == "-facil-":
             nuevo_tablero = []
             antigua_pos, tipo_ficha, nueva_pos = cpu.jugada_facil(tablero,
-                                                                  PIEZAS_CPU,
-                                                                  PIEZAS_JUGADOR)
+                                                                PIEZAS_CPU,
+                                                                PIEZAS_JUGADOR)
             if isinstance(nueva_pos, list):
                 if len(nueva_pos) == 1:
                     for un in nueva_pos:
@@ -768,19 +806,14 @@ while True:
                 for res in resultado:
                     ventana[res[1]].update(res[0])
             cpu_turno += 1
-
-    if nueva_pos == None:
-        nueva_pos = "Inicio"
-    ultima_casilla = marcador.info_jugada(nueva_pos)
-    ventana["-info-"].update(f"{ultima_casilla}")
+        actualizar_color_botones()
     eventos, valores = ventana.read()
-    
-            
     if eventos == sg.WINDOW_CLOSED:
         break
     #boton reinicio
     if eventos == "-reiniciar-":
         tablero, mesa = rendirse()
+        game = True
         actualizar_color_botones()
         pieza_seleccionada = None
         movimientos_posibles = []
@@ -806,99 +839,45 @@ while True:
             nivel_cpu = eventos2
             ventana_nivel.close()
     #pulsacion en la ventana
+    check_victoria_blancas, check_victoria_negras = ajedrez.victoria(tablero)
+    if check_victoria_blancas == False:
+        sg.popup("Victoria Negras", title="Derrota")
+        game = False
+    if check_victoria_negras == False:
+        sg.popup("Victoria Blancas", title="Victoria")
+        game = False
+    if game == False:
+        continue
     elif isinstance(eventos, tuple):
         sprite = ""
         fila, columna = eventos
         op = (fila, columna)
         casilla = ventana[op]
+        for tab in tablero:
+            token = tab[1]
+            if token[:3] == "rey":
+                pos_rey = tab[0]
         #comprueba condicion de enrroque
-        if mov_final_enrroque != [[]] and len(movimientos_posibles) > 0:
-            if op == mov_final_enrroque[0] and check_disparador_enrroque2 == False:
-                for tab in tablero:
-                    button_element = ventana[tab[0]]
-                    background_color = button_element.TKButton.cget('background')
-                    if background_color == 'yellow':
-                        for sitios in checks_torres.values():
-                            if sitios == op:
-                                nuevo_tablero2 = []
-                                turno += 1
-                                ventana[sitios].update(image_filename=RUTA_PIEZAS_CLASICAS + "torre_blanca.png")
-                                for tab2 in tablero:
-                                    if tab2[0] == sitios:
-                                        nv2 = (tab2[0], "rey_blanco.png")
-                                        ventana[sitios].update(image_filename=RUTA_PIEZAS_CLASICAS + "rey_blanco.png")
-                                        nuevo_tablero2.append(nv2)
-                                    else:
-                                        nuevo_tablero2.append(tab2)
-                                tablero = nuevo_tablero2
-                                nuevo_tablero2 = []
-                                for tab2 in tablero:
-                                    if tab2[0] == pieza_seleccionada:
-                                        nv2 = (tab2[0], "vacio.png")
-                                        nuevo_tablero2.append(nv2)
-                                        ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
-                                    else:
-                                        nuevo_tablero2.append(tab2)
-                                tablero = nuevo_tablero2
-                                actualizar_color_botones()
-                                nuevo_tablero2 = []
-                                 
-                                if sitios == (7, 6):
-                                    for tab2 in tablero:
-                                        if tab2[0] == (7, 5):
-                                            nv2 = (tab2[0], "torre_blanca.png")
-                                            nuevo_tablero2.append(nv2)
-                                            ventana[(7, 5)].update(image_filename=RUTA_PIEZAS_CLASICAS + "torre_blanca.png")
-                                        else:
-                                            nuevo_tablero2.append(tab2)
-                                    tablero = nuevo_tablero2
-                                    nuevo_tablero2 = []
-                                    for tab2 in tablero:
-                                        if tab2[0] == (7, 7):
-                                            nv2 = (tab2[0], "vacio.png")
-                                            nuevo_tablero2.append(nv2)
-                                            ventana[(7, 7)].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
-                                        else:
-                                            nuevo_tablero2.append(tab2)
-                                    tablero = nuevo_tablero2
-                                    actualizar_color_botones()
-                                    
-                                if sitios == (7, 2):
-                                    for tab2 in tablero:
-                                        if tab2[0] == (7, 3):
-                                            nv2 = (tab2[0], "torre_blanca.png")
-                                            nuevo_tablero2.append(nv2)
-                                            ventana[(7, 3)].update(image_filename=RUTA_PIEZAS_CLASICAS + "torre_blanca.png")
-                                        else:
-                                            nuevo_tablero2.append(tab2)
-                                    tablero = nuevo_tablero2
-                                    nuevo_tablero2 = []
-                                    for tab2 in tablero:
-                                        if tab2[0] == (7, 0):
-                                            nv2 = (tab2[0], "vacio.png")
-                                            nuevo_tablero2.append(nv2)
-                                            ventana[(7, 0)].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
-                                        else:
-                                            nuevo_tablero2.append(tab2)
-                                    
-                                        
-                                tablero = nuevo_tablero2
-                                actualizar_color_botones()
-                                pieza_seleccionada = None
-                                check_disparador_enrroque1 = True
-                                check_disparador_enrroque2 = True
-                                
-        actualizar_color_botones()
-        if not pieza_seleccionada and check_disparador_enrroque1 == False:
+        if not pieza_seleccionada:
             for ele in tablero:
                 if eventos == ele[0]:
                     if ele[1] != "vacio.png":
                         if ele[1] in PIEZAS_JUGADOR:
                             mov_paso, mov_comer, mov_defensa, mov_enrroque = marcar_mov(eventos, ele[1])
-                            
                             pieza_seleccionada = op
+                            if ele[1] == "rey_blanco.png":
+                                check_disparador_enrroque1, check_disparador_enrroque2 = enroque(ele[1])
                             mov_final_enrroque = []
-                            mov_final_enrroque.append(mov_enrroque)
+                            mov_final_enrroque = mov_enrroque
+                            for mov in mov_paso:
+                                check_dejar_desprotejido = cpu.peligro(tablero,mov, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)
+                                if check_dejar_desprotejido == True:
+                                    mov_paso.remove(mov)
+                            for mov in mov_comer:
+                                check_dejar_desprotejido = cpu.peligro(tablero,mov, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)
+                                if check_dejar_desprotejido == True:
+                                    mov_comer.remove(mov)
+                             
                             for mov in mov_paso:
                                 ventana[mov].update(button_color=("","green"))
                                 movimientos_posibles.append(mov)
@@ -909,12 +888,76 @@ while True:
                                 ventana[mov].update(button_color=("", "blue"))
                                 movimientos_defensa.append(mov)
                             if (7, 2) in mov_final_enrroque or (7, 6) in mov_final_enrroque:
-                                for cord in mov_final_enrroque:
-                                    ventana[cord].update(button_color=("", "yellow"))
-                                    movimientos_posibles.append(cord)
+                                if  check_disparador_enrroque2 == True:
+                                    for cord in mov_final_enrroque:                                
+                                        check_dejar_desprotejido = cpu.peligro(tablero,cord, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)
+                                        check_jaque = cpu.peligro(tablero, pos_rey, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)
+                                        if check_dejar_desprotejido == True or check_jaque == True:
+                                            mov_paso.remove(mov)
+                                        else:
+                                            ventana[cord].update(button_color=("", "yellow"))
+                                            movimientos_posibles.append(cord)
+            continue
+        if len(mov_final_enrroque) > 0 and len(movimientos_posibles) > 0:
+            if op in mov_final_enrroque:
+                button_element = ventana[op]
+                background_color = button_element.TKButton.cget('background')
+                if background_color == 'yellow':   
+                    turno += 1
+                    nuevo_tablero2 = []
+                    for tab2 in tablero:
+                        if op == (7, 6):
+                            if tab2[0] == pieza_seleccionada:
+                                nv2 = (tab2[0], "vacio.png")
+                                nuevo_tablero2.append(nv2)
+                                ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
+                            elif tab2[0] == (7, 5):
+                                nv2 = (tab2[0], "torre_blanca.png")
+                                nuevo_tablero2.append(nv2)
+                                ventana[(7, 5)].update(image_filename=RUTA_PIEZAS_CLASICAS + "torre_blanca.png")
+                            elif tab2[0] == (7, 6):
+                                nv2 = (tab2[0], "rey_blanco.png")
+                                nuevo_tablero2.append(nv2)
+                                ventana[(7, 6)].update(image_filename=RUTA_PIEZAS_CLASICAS + "rey_blanco.png")
+                            elif tab2[0] == (7, 7):
+                                nv2 = (tab2[0], "vacio.png")
+                                nuevo_tablero2.append(nv2)
+                                ventana[(7, 7)].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
+                            else:
+                                nuevo_tablero2.append(tab2)
+                        if op == (7, 2):
+                            if tab2 == (pieza_seleccionada, "rey_blanco.png"):
+                                nv2 = (tab2[0], "vacio.png")
+                                nuevo_tablero2.append(nv2)
+                                ventana[tab2[0]].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
+                            elif tab2 == ((7, 0), "torre_blanca.png"):
+                                nv2 = (tab2[0], "vacio.png")
+                                nuevo_tablero2.append(nv2)
+                                ventana[tab2[0]].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
+                            elif tab2 == ((7, 2), "vacio.png"):
+                                nv2 = (tab2[0], "rey_blanco.png")
+                                ventana[tab2[0]].update(image_filename=RUTA_PIEZAS_CLASICAS + "rey_blanco.png")
+                                nuevo_tablero2.append(nv2)
+                            elif tab2 == ((7, 3), "vacio.png"):
+                                nv2 = (tab2[0], "torre_blanca.png")
+                                nuevo_tablero2.append(nv2)
+                                ventana[tab2[0]].update(image_filename=RUTA_PIEZAS_CLASICAS + "torre_blanca.png")
+                            else:
+                                nuevo_tablero2.append(tab2)
+                    
+                tablero = nuevo_tablero2
+                nuevo_tablero2 = []
+                
+        
             
-                            
-        elif pieza_seleccionada:
+                actualizar_color_botones()
+                pieza_seleccionada = None
+                check_disparador_enrroque1 = True
+                check_disparador_enrroque2 = True
+                continue
+                      
+        
+        if pieza_seleccionada:
             nuevo_tablero = []
             sprite = ""
             sprite_eliminado = ""
@@ -935,13 +978,11 @@ while True:
                     nuevo_tablero.append(i)
             #Coronar Peon
             if op[0] == 0 and sprite[0] == "p":
-                
-                check_jaque = cpu.peligro_2(tablero, pos_rey, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)
+                check_jaque = cpu.peligro(tablero, pos_rey, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)
                 if check_jaque != True:
                     if op in movimientos_posibles:
                         if sprite_eliminado != "":
                             pieza_comida = sprite_eliminado[:-4]
-
                             negras[pieza_comida] -= 1
                             result1 = negras[pieza_comida]
                             result2 = marcador.marcador_negro2[pieza_comida]
@@ -950,7 +991,6 @@ while True:
                             pieza_final = pieza_comida + ".ficha"
                             ventana[pieza_final].update(result3)
                         sprite = cambiar_pieza(op)
-
                         ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
                         ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
                         actualizar_color_botones()
@@ -968,10 +1008,8 @@ while True:
                                 nuevo_tablero.append(i)
                         tablero = nuevo_tablero
                         nuevo_tablero = []
-               
             if op in movimientos_posibles:
-                check_jaque = cpu.peligro(tablero,pos_rey, "blancas", PIEZAS_CPU, PIEZAS_JUGADOR)  
-                if check_jaque != True:
+                    
                     ventana[op].update(image_filename=RUTA_PIEZAS_CLASICAS + sprite)
                     ventana[pieza_seleccionada].update(image_filename=RUTA_PIEZAS_CLASICAS + "vacio.png")
                     actualizar_color_botones()
@@ -988,30 +1026,14 @@ while True:
                             pieza = piezza[-9:-4]
                             i_correcta1 = piezza[:-4]
                             i_correcta = i_correcta1 + ".ficha"
-                            
-                            
                         else:
                             nuevo_tablero.append(i)
                     tablero = nuevo_tablero
                     nuevo_tablero = []
-
-
-            
-
-
             elif op not in movimientos_posibles:
                 actualizar_color_botones()
                 movimientos_posibles = []
-                pieza_seleccionada = None
-        
-                    
-                      
-            
-                                
-                            
-                
-
-        
+                pieza_seleccionada = None    
         check_disparador_enrroque1 = False
 
     
